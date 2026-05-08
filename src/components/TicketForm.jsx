@@ -275,6 +275,9 @@ export default function TicketForm({ isOpen, onClose, selectedDraw, onSuccess })
                     <p className="font-heavy text-base sm:text-lg text-solid-black leading-tight">
                       MANUEL ROMERO ZELADA <br />
                     </p>
+                    <p className="font-heavy text-base sm:text-lg text-solid-pink leading-tight">
+                      983001926 <br />
+                    </p>
                   </div>
                 </div>
 
@@ -381,11 +384,14 @@ export default function TicketForm({ isOpen, onClose, selectedDraw, onSuccess })
                 className="w-full h-auto object-contain"
               />
             </div>
-            <p className="font-bold text-center text-sm sm:text-base text-gray-700">
+            <p className="font-bold text-center text-sm sm:text-lg text-gray-700">
               Escanea para pagar a:
             </p>
-            <p className="font-heavy text-lg sm:text-xl text-center text-solid-purple mt-1 leading-tight">
+            <p className="font-heavy text-lg sm:text-xl text-center text-solid-black mt-1 leading-tight">
               MANUEL ROMERO ZELADA
+            </p>
+            <p className="font-heavy text-lg sm:text-xl text-center text-solid-pink mt-1 leading-tight">
+              983001926
             </p>
           </div>
         </div>
