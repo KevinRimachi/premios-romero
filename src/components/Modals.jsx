@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import TicketForm from "./TicketForm";
 import FestivalTicket from "./FestivalTicket";
 import { db } from "@/config/firebase";
@@ -27,6 +27,13 @@ export default function Modals({
   const [searchStatus, setSearchStatus] = useState("idle");
   const [searchResults, setSearchResults] = useState([]);
   const [currentTicketIndex, setCurrentTicketIndex] = useState(0);
+  const [currentSuccessIndex, setCurrentSuccessIndex] = useState(0);
+
+  useEffect(() => {
+    if (successData) {
+      setCurrentSuccessIndex(0);
+    }
+  }, [successData]);
 
   const exportExcel = () => {
     if (adminPass === "LORENZO2026") {
@@ -81,26 +88,65 @@ export default function Modals({
       />
 
       {/* MODAL DE TICKET DIGITAL (ÉXITO WOW) */}
-      {successData && (
-        <div className="fixed inset-0 bg-[#09090b]/90 backdrop-blur-md z-[110] flex items-center justify-center p-4 md:p-8 overflow-y-auto">
-          <div className="w-full max-w-4xl text-center flex flex-col items-center">
-            <h3 className="font-heavy text-2xl md:text-4xl uppercase text-solid-green mb-4 drop-shadow-[2px_2px_0_#000]">
-              ¡Pago Registrado Exitosamente!
-            </h3>
+      {successData && (() => {
+        const successTickets = successData.ticket_numeros 
+          ? successData.ticket_numeros.map(code => ({ ...successData, ticket_numero: code }))
+          : [successData];
+        const activeSuccessTicket = successTickets[currentSuccessIndex];
 
-            <div className="w-full mb-8">
-              <FestivalTicket ticket={successData} fireConfetti={true} />
+        return (
+          <div className="fixed inset-0 bg-[#09090b]/90 backdrop-blur-md z-[110] flex items-center justify-center p-4 md:p-8 overflow-y-auto">
+            <div className="w-full max-w-4xl text-center flex flex-col items-center">
+              <h3 className="font-heavy text-2xl md:text-4xl uppercase text-solid-green mb-4 drop-shadow-[2px_2px_0_#000]">
+                ¡Pago Registrado Exitosamente!
+              </h3>
+
+              <div className="w-full mb-8 flex flex-col items-center">
+                {activeSuccessTicket && (
+                  <FestivalTicket 
+                    ticket={activeSuccessTicket} 
+                    fireConfetti={currentSuccessIndex === 0} 
+                  />
+                )}
+
+                {successTickets.length > 1 && (
+                  <div className="flex items-center gap-6 mt-6">
+                    <button 
+                      onClick={() => setCurrentSuccessIndex(prev => Math.max(0, prev - 1))}
+                      disabled={currentSuccessIndex === 0}
+                      className={`w-12 h-12 flex items-center justify-center border-2 border-solid-black brutal-shadow rounded-full ${currentSuccessIndex === 0 ? 'bg-gray-400 text-gray-600 cursor-not-allowed opacity-50' : 'bg-solid-yellow text-solid-black hover:scale-110 hover:bg-yellow-300 transition'}`}
+                    >
+                      <i className="fa-solid fa-arrow-left text-xl"></i>
+                    </button>
+                    
+                    <div className="flex flex-col items-center">
+                      <span className="font-heavy text-xl text-white drop-shadow-[2px_2px_0_#000]">
+                        {currentSuccessIndex + 1} / {successTickets.length}
+                      </span>
+                      <span className="text-white text-xs font-bold mt-1 tracking-wider uppercase drop-shadow-[1px_1px_0_#000]">Tickets</span>
+                    </div>
+                    
+                    <button 
+                      onClick={() => setCurrentSuccessIndex(prev => Math.min(successTickets.length - 1, prev + 1))}
+                      disabled={currentSuccessIndex === successTickets.length - 1}
+                      className={`w-12 h-12 flex items-center justify-center border-2 border-solid-black brutal-shadow rounded-full ${currentSuccessIndex === successTickets.length - 1 ? 'bg-gray-400 text-gray-600 cursor-not-allowed opacity-50' : 'bg-solid-yellow text-solid-black hover:scale-110 hover:bg-yellow-300 transition'}`}
+                    >
+                      <i className="fa-solid fa-arrow-right text-xl"></i>
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <button
+                onClick={closeSuccessModal}
+                className="w-full max-w-md bg-white text-solid-black font-heavy text-lg py-3 border-[3px] border-solid-black brutal-shadow uppercase hover:bg-gray-200 transition"
+              >
+                Volver al Inicio
+              </button>
             </div>
-
-            <button
-              onClick={closeSuccessModal}
-              className="w-full max-w-md bg-white text-solid-black font-heavy text-lg py-3 border-[3px] border-solid-black brutal-shadow uppercase hover:bg-gray-200 transition"
-            >
-              Volver al Inicio
-            </button>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* MODAL ADMIN (Puerta Secreta Exportar) */}
       {isAdminModalOpen && (

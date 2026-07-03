@@ -1,7 +1,7 @@
 import { collection, addDoc, getDocs, serverTimestamp } from "firebase/firestore";
 import { db } from "../config/firebase";
 
-export const saveTicketData = async (ticketData, imageUrl) => {
+export const saveTicketData = async (ticketData, imageUrl, imageHash) => {
   try {
     // Referencia a la colección 'participantes' en Firestore
     const ticketsCollection = collection(db, "participantes");
@@ -10,6 +10,7 @@ export const saveTicketData = async (ticketData, imageUrl) => {
     const docRef = await addDoc(ticketsCollection, {
       ...ticketData,
       comprobanteUrl: imageUrl,
+      comprobanteHash: imageHash, // Se guarda el hash para prevenir duplicados
       createdAt: serverTimestamp(),
       estado: "pendiente", // Puedes usar esto para validar el pago más tarde
     });

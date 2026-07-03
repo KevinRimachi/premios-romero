@@ -108,17 +108,17 @@ export default function FestivalTicket({ ticket, fireConfetti = false }) {
                 <span className="text-[9px] sm:text-base font-bold text-white text-left sm:text-right truncate">{ticket.dni}</span>
               </div>
               
-              {/* En Mobile, Operacion está en la fila 1. En Desktop, Operacion está en su propia fila. */}
+              {/* En Mobile, Valor está en la fila 1. En Desktop, Valor está en su propia fila. */}
               <div className="border border-white/20 bg-white/5 rounded p-1 sm:p-2 flex sm:hidden flex-col justify-between flex-1">
-                <span className="text-[7px] text-purple-300 font-bold uppercase mb-0.5">Operación</span>
-                <span className="text-[9px] font-bold text-yellow-400 text-left truncate">{ticket.numero_operacion || "N/A"}</span>
+                <span className="text-[7px] text-purple-300 font-bold uppercase mb-0.5">Valor</span>
+                <span className="text-[9px] font-bold text-yellow-400 text-left truncate">S/ {ticket.monto_pago || "20.00"}</span>
               </div>
             </div>
 
-            {/* Operacion (Desktop) */}
+            {/* Valor (Desktop) */}
             <div className="hidden sm:flex border border-white/20 bg-white/5 rounded p-2 items-center justify-between">
-              <span className="text-[9px] text-purple-300 font-bold uppercase w-1/3">Operación</span>
-              <span className="text-base font-bold text-yellow-400 w-2/3 text-right truncate">{ticket.numero_operacion || "N/A"}</span>
+              <span className="text-[9px] text-purple-300 font-bold uppercase w-1/3">Valor</span>
+              <span className="text-base font-bold text-yellow-400 w-2/3 text-right truncate">S/ {ticket.monto_pago || "20.00"}</span>
             </div>
 
             {/* Participante */}

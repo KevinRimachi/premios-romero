@@ -54,7 +54,7 @@ export default function AdminModal({ isOpen, onClose }) {
           "WhatsApp": t.whatsapp || "",
           "Departamento": t.departamento || "",
           "Sorteo": t.sorteo || "",
-          "N° Operacion": t.numero_operacion || "",
+          "Monto (S/)": t.monto_pago || t.monto_total || 10,
           "Estado": t.estado || "",
           "Fecha Registro": fecha,
           "Voucher URL": t.comprobanteUrl || ""
