@@ -9,7 +9,7 @@ export default function Header({ onOpenTickets }) {
         <div className="flex items-center gap-2 md:gap-3 cursor-pointer">
           <img
             src="/logo_premios_Romero.webp"
-            alt="Logo Premios Lorenzo"
+            alt="Logo Premios Romero"
             className="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-solid-black object-cover bg-white"
           />
           <h1 className="font-heavy text-xl md:text-2xl leading-none uppercase tracking-wide">
