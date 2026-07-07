@@ -559,17 +559,10 @@ export default function TicketForm({ isOpen, onClose, selectedDraw, onSuccess })
             {/* Botón enviar */}
             <button
               type="submit"
-              disabled={isSubmitting}
-              className={`w-full bg-solid-green text-white font-heavy text-xl sm:text-2xl py-3 border-4 border-solid-black brutal-shadow uppercase tracking-wide transition-colors ${isSubmitting ? "opacity-80 pointer-events-none" : "hover:bg-green-600"
-                }`}
+              disabled={true}
+              className={`w-full bg-gray-400 text-gray-700 font-heavy text-xl sm:text-2xl py-3 border-4 border-solid-black brutal-shadow uppercase tracking-wide cursor-not-allowed opacity-80`}
             >
-              {isSubmitting ? (
-                <>
-                  <i className="fa-solid fa-spinner fa-spin mr-2"></i> ENVIANDO...
-                </>
-              ) : (
-                "Generar Ticket Digital"
-              )}
+              Registro Pausado
             </button>
           </form>
         </div>

@@ -96,6 +96,15 @@ export default function Hero({ onOpenForm, onOpenInactive }) {
             La participación en estos sorteos es exclusiva para personas mayores de 18 años.
           </p>
         </div>
+        {/* Alerta de Pausa Temporal */}
+        <div className="bg-yellow-400 border-[3px] border-solid-black p-3 md:p-4 text-center brutal-shadow mt-2">
+          <h2 className="font-heavy text-base md:text-xl text-solid-black uppercase tracking-wide mb-2">
+            <i className="fa-solid fa-clock mr-2"></i>Inscripciones en Revisión
+          </h2>
+          <p className="font-bold text-solid-black text-xs md:text-sm leading-relaxed">
+            Las inscripciones están temporalmente en revisión. Estamos implementando mejoras de seguridad para validar correctamente los pagos. Por favor, vuelve a intentarlo más tarde.
+          </p>
+        </div>
       </div>
 
       {/* CONTENIDO PRINCIPAL */}
@@ -306,10 +315,10 @@ export default function Hero({ onOpenForm, onOpenInactive }) {
               </div>
               <button
                 type="button"
-                onClick={() => onOpenForm({ name: "30 de Agosto", price: 10, prize: "2 motos lineales" })}
-                className="w-full sm:w-auto bg-solid-black text-white font-heavy text-lg sm:text-xl px-5 py-2.5 sm:px-6 sm:py-3 uppercase brutal-shadow hover:bg-gray-800 border-[3px] border-solid-black cursor-pointer"
+                disabled={true}
+                className="w-full sm:w-auto bg-gray-400 text-gray-700 font-heavy text-lg sm:text-xl px-5 py-2.5 sm:px-6 sm:py-3 uppercase brutal-shadow border-[3px] border-solid-black cursor-not-allowed opacity-80"
               >
-                Comprar
+                Pausado
               </button>
             </div>
           </div>
