@@ -172,7 +172,7 @@ export default function TicketForm({ isOpen, onClose, selectedDraw, onSuccess })
           apellidos: formData.apellidos || "",
           whatsapp: formData.whatsapp,
           departamento: formData.departamento,
-          sorteo: selectedDraw ? selectedDraw.name : "Julio",
+          sorteo: selectedDraw ? selectedDraw.name : "30 de Agosto",
           monto_pago: TICKET_PRICE, // individual value (S/ 10.00)
           monto_total: totalPagar,
           ticket_numero: ticket_numero,
@@ -188,7 +188,7 @@ export default function TicketForm({ isOpen, onClose, selectedDraw, onSuccess })
         apellidos: formData.apellidos || "",
         whatsapp: formData.whatsapp,
         departamento: formData.departamento,
-        sorteo: selectedDraw ? selectedDraw.name : "Julio",
+        sorteo: selectedDraw ? selectedDraw.name : "30 de Agosto",
         monto_pago: totalPagar,
         ticket_numeros: ticket_numeros,
         ticket_numero: ticket_numeros[0]
@@ -302,8 +302,8 @@ export default function TicketForm({ isOpen, onClose, selectedDraw, onSuccess })
                             }
                           }
                         }}
-                        className="brutal-input w-full text-center text-base sm:text-xl font-heavy p-0 sm:p-1 h-11 sm:h-12 bg-white"
-                        style={{ border: '3px solid black' }}
+                        className="brutal-input w-full text-center text-lg sm:text-xl font-heavy h-11 sm:h-12 bg-white text-black"
+                        style={{ border: '3px solid black', padding: 0 }}
                       />
                     ))}
                   </div>

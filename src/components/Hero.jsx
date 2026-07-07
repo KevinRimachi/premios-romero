@@ -306,7 +306,7 @@ export default function Hero({ onOpenForm, onOpenInactive }) {
               </div>
               <button
                 type="button"
-                onClick={() => onOpenForm({ name: "Julio", price: 10, prize: "2 motos lineales" })}
+                onClick={() => onOpenForm({ name: "30 de Agosto", price: 10, prize: "2 motos lineales" })}
                 className="w-full sm:w-auto bg-solid-black text-white font-heavy text-lg sm:text-xl px-5 py-2.5 sm:px-6 sm:py-3 uppercase brutal-shadow hover:bg-gray-800 border-[3px] border-solid-black cursor-pointer"
               >
                 Comprar
