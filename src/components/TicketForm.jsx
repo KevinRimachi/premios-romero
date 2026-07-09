@@ -559,10 +559,16 @@ export default function TicketForm({ isOpen, onClose, selectedDraw, onSuccess })
             {/* Botón enviar */}
             <button
               type="submit"
-              disabled={true}
-              className={`w-full bg-gray-400 text-gray-700 font-heavy text-xl sm:text-2xl py-3 border-4 border-solid-black brutal-shadow uppercase tracking-wide cursor-not-allowed opacity-80`}
+              disabled={isSubmitting}
+              className={`w-full bg-solid-black text-white font-heavy text-xl sm:text-2xl py-3 border-4 border-solid-black brutal-shadow uppercase tracking-wide transition-transform ${
+                isSubmitting ? "opacity-70 cursor-not-allowed" : "hover:-translate-y-1 hover:bg-gray-800"
+              }`}
             >
-              Registro Pausado
+              {isSubmitting ? (
+                <><i className="fa-solid fa-spinner fa-spin mr-2"></i> Procesando...</>
+              ) : (
+                "Registrar Compra"
+              )}
             </button>
           </form>
         </div>

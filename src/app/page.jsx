@@ -10,7 +10,7 @@ export default function Home() {
   const [isTicketsModalOpen, setIsTicketsModalOpen] = useState(false);
   const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
   const [isInactiveModalOpen, setIsInactiveModalOpen] = useState(false);
-  const [isPauseModalOpen, setIsPauseModalOpen] = useState(true);
+  const [isPauseModalOpen, setIsPauseModalOpen] = useState(false);
 
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [selectedDraw, setSelectedDraw] = useState(null);
