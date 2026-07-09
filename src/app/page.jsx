@@ -10,7 +10,7 @@ export default function Home() {
   const [isTicketsModalOpen, setIsTicketsModalOpen] = useState(false);
   const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
   const [isInactiveModalOpen, setIsInactiveModalOpen] = useState(false);
-  const [isMaintenanceModalOpen, setIsMaintenanceModalOpen] = useState(true);
+  const [isPauseModalOpen, setIsPauseModalOpen] = useState(true);
 
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [selectedDraw, setSelectedDraw] = useState(null);
@@ -24,7 +24,6 @@ export default function Home() {
       <Hero 
         onOpenForm={(draw) => { setSelectedDraw(draw); setIsFormModalOpen(true); }}
         onOpenInactive={() => setIsInactiveModalOpen(true)}
-        onOpenMaintenance={() => setIsMaintenanceModalOpen(true)}
       />
 
       <Footer onOpenAdmin={() => setIsAdminModalOpen(true)} />
@@ -36,8 +35,8 @@ export default function Home() {
         closeAdminModal={() => setIsAdminModalOpen(false)}
         isInactiveModalOpen={isInactiveModalOpen}
         closeInactiveModal={() => setIsInactiveModalOpen(false)}
-        isMaintenanceModalOpen={isMaintenanceModalOpen}
-        closeMaintenanceModal={() => setIsMaintenanceModalOpen(false)}
+        isPauseModalOpen={isPauseModalOpen}
+        closePauseModal={() => setIsPauseModalOpen(false)}
         isFormModalOpen={isFormModalOpen}
         closeFormModal={() => setIsFormModalOpen(false)}
         selectedDraw={selectedDraw}

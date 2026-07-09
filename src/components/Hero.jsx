@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 
-export default function Hero({ onOpenForm, onOpenInactive, onOpenMaintenance }) {
+export default function Hero({ onOpenForm, onOpenInactive }) {
   const [timeLeft, setTimeLeft] = useState({
     days: "00",
     hours: "00",
@@ -95,21 +95,6 @@ export default function Hero({ onOpenForm, onOpenInactive, onOpenMaintenance }) 
           <p className="font-bold text-white text-[10px] md:text-xs">
             La participación en estos sorteos es exclusiva para personas mayores de 18 años.
           </p>
-        </div>
-        {/* Alerta de Pausa Temporal */}
-        <div className="bg-yellow-400 border-[3px] border-solid-black p-3 md:p-4 text-center brutal-shadow mt-2 flex flex-col items-center">
-          <h2 className="font-heavy text-base md:text-xl text-solid-black uppercase tracking-wide mb-2">
-            <i className="fa-solid fa-clock mr-2"></i>Inscripciones en Revisión
-          </h2>
-          <p className="font-bold text-solid-black text-xs md:text-sm leading-relaxed mb-3">
-            Las inscripciones están temporalmente en revisión. Estamos implementando mejoras de seguridad.
-          </p>
-          <button
-            onClick={onOpenMaintenance}
-            className="bg-solid-black text-white font-heavy text-xs md:text-sm py-2 px-4 border-2 border-solid-black brutal-shadow uppercase hover:bg-gray-800 transition"
-          >
-            Ver Aviso Completo
-          </button>
         </div>
       </div>
 
