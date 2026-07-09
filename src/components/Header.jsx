@@ -1,8 +1,6 @@
 import { useState } from "react";
-import AdminModal from "./AdminModal";
 
 export default function Header({ onOpenTickets }) {
-  const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
   return (
     <header className="bg-solid-yellow border-b-[3px] border-solid-black sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 h-14 md:h-16 flex items-center justify-between">
@@ -28,14 +26,6 @@ export default function Header({ onOpenTickets }) {
             <span className="hidden md:inline">Facebook</span>
           </a>
 
-          <button
-            onClick={() => setIsAdminModalOpen(true)}
-            className="bg-white border-2 border-solid-black text-solid-black px-2 md:px-3 py-1.5 text-sm font-bold flex items-center gap-2 hover:bg-gray-100 brutal-shadow"
-          >
-            <i className="fa-solid fa-user-shield text-gray-800 text-lg"></i>
-            <span className="hidden md:inline">Admin</span>
-          </button>
-
           <a
             href="https://wa.me/51900031628?text=Hola,%20quiero%20más%20información"
             target="_blank"
@@ -55,7 +45,6 @@ export default function Header({ onOpenTickets }) {
           </button>
         </div>
       </div>
-      <AdminModal isOpen={isAdminModalOpen} onClose={() => setIsAdminModalOpen(false)} />
     </header>
   );
 }
