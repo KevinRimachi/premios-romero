@@ -25,7 +25,7 @@ export default function Modals({
 
   const [searchDni, setSearchDni] = useState("");
   const [searchStatus, setSearchStatus] = useState("idle");
-  const [searchResults, setSearchResults] = useState([]);
+  const [searchResults, setSearchResults] = useState({ approved: [], rejected: 0, pending: 0 });
   const [currentTicketIndex, setCurrentTicketIndex] = useState(0);
   const [currentSuccessIndex, setCurrentSuccessIndex] = useState(0);
 
@@ -57,18 +57,32 @@ export default function Modals({
     setSearchStatus("loading");
     
     try {
-      const q = query(collection(db, "participantes"), where("dni", "==", searchDni));
+      const q = query(
+        collection(db, "participantes"), 
+        where("dni", "==", searchDni),
+        where("sorteo", "==", selectedDraw ? selectedDraw.name : "30 de Agosto")
+      );
       const querySnapshot = await getDocs(q);
-      const results = [];
+      const allResults = [];
       querySnapshot.forEach((doc) => {
-        results.push(doc.data());
+        allResults.push(doc.data());
       });
-      results.sort((a, b) => {
+      
+      const approvedTickets = allResults.filter(r => r.status === "approved");
+      const rejectedTickets = allResults.filter(r => r.status === "rejected");
+      const pendingTickets = allResults.filter(r => r.status === "pending" || !r.status);
+      
+      approvedTickets.sort((a, b) => {
         const numA = String(a.ticket_numero || "");
         const numB = String(b.ticket_numero || "");
         return numA.localeCompare(numB);
       });
-      setSearchResults(results);
+
+      setSearchResults({
+        approved: approvedTickets,
+        rejected: rejectedTickets.length,
+        pending: pendingTickets.length
+      });
       setCurrentTicketIndex(0);
       setSearchStatus("success");
     } catch (error) {
@@ -87,66 +101,32 @@ export default function Modals({
         onSuccess={onSuccess}
       />
 
-      {/* MODAL DE TICKET DIGITAL (ÉXITO WOW) */}
-      {successData && (() => {
-        const successTickets = successData.ticket_numeros 
-          ? successData.ticket_numeros.map(code => ({ ...successData, ticket_numero: code }))
-          : [successData];
-        const activeSuccessTicket = successTickets[currentSuccessIndex];
-
-        return (
-          <div className="fixed inset-0 bg-[#09090b]/90 backdrop-blur-md z-[110] flex items-center justify-center p-4 md:p-8 overflow-y-auto">
-            <div className="w-full max-w-4xl text-center flex flex-col items-center">
-              <h3 className="font-heavy text-2xl md:text-4xl uppercase text-solid-green mb-4 drop-shadow-[2px_2px_0_#000]">
-                ¡Pago Registrado Exitosamente!
-              </h3>
-
-              <div className="w-full mb-8 flex flex-col items-center">
-                {activeSuccessTicket && (
-                  <FestivalTicket 
-                    ticket={activeSuccessTicket} 
-                    fireConfetti={currentSuccessIndex === 0} 
-                  />
-                )}
-
-                {successTickets.length > 1 && (
-                  <div className="flex items-center gap-6 mt-6">
-                    <button 
-                      onClick={() => setCurrentSuccessIndex(prev => Math.max(0, prev - 1))}
-                      disabled={currentSuccessIndex === 0}
-                      className={`w-12 h-12 flex items-center justify-center border-2 border-solid-black brutal-shadow rounded-full ${currentSuccessIndex === 0 ? 'bg-gray-400 text-gray-600 cursor-not-allowed opacity-50' : 'bg-solid-yellow text-solid-black hover:scale-110 hover:bg-yellow-300 transition'}`}
-                    >
-                      <i className="fa-solid fa-arrow-left text-xl"></i>
-                    </button>
-                    
-                    <div className="flex flex-col items-center">
-                      <span className="font-heavy text-xl text-white drop-shadow-[2px_2px_0_#000]">
-                        {currentSuccessIndex + 1} / {successTickets.length}
-                      </span>
-                      <span className="text-white text-xs font-bold mt-1 tracking-wider uppercase drop-shadow-[1px_1px_0_#000]">Tickets</span>
-                    </div>
-                    
-                    <button 
-                      onClick={() => setCurrentSuccessIndex(prev => Math.min(successTickets.length - 1, prev + 1))}
-                      disabled={currentSuccessIndex === successTickets.length - 1}
-                      className={`w-12 h-12 flex items-center justify-center border-2 border-solid-black brutal-shadow rounded-full ${currentSuccessIndex === successTickets.length - 1 ? 'bg-gray-400 text-gray-600 cursor-not-allowed opacity-50' : 'bg-solid-yellow text-solid-black hover:scale-110 hover:bg-yellow-300 transition'}`}
-                    >
-                      <i className="fa-solid fa-arrow-right text-xl"></i>
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              <button
-                onClick={closeSuccessModal}
-                className="w-full max-w-md bg-white text-solid-black font-heavy text-lg py-3 border-[3px] border-solid-black brutal-shadow uppercase hover:bg-gray-200 transition"
-              >
-                Volver al Inicio
-              </button>
+      {/* MODAL DE TICKET DIGITAL (ÉXITO WOW -> Ahora Formal En Revisión) */}
+      {successData && (
+        <div className="fixed inset-0 bg-[#09090b]/90 backdrop-blur-md z-[110] flex items-center justify-center p-4 md:p-8 overflow-y-auto">
+          <div className="w-full max-w-lg bg-white border-4 border-solid-black brutal-shadow p-8 text-center flex flex-col items-center">
+            <div className="w-20 h-20 bg-solid-yellow border-4 border-solid-black brutal-shadow-sm rounded-full flex items-center justify-center text-solid-black mb-6">
+              <i className="fa-solid fa-clock-rotate-left text-4xl"></i>
             </div>
+            <h3 className="font-heavy text-3xl md:text-4xl uppercase text-solid-black mb-4 leading-none">
+              ¡Registro Completado!
+            </h3>
+            <p className="font-bold text-gray-700 text-lg mb-6 leading-relaxed">
+              Su compra se encuentra actualmente en <span className="bg-solid-yellow px-1 border-b-[3px] border-solid-black uppercase">Revisión</span>. Una vez que nuestro equipo valide su comprobante, sus tickets serán aprobados.
+            </p>
+            <div className="bg-gray-100 p-4 border-[3px] border-solid-black brutal-shadow-sm mb-8 w-full text-left">
+              <p className="text-sm font-heavy text-gray-500 uppercase mb-2"><i className="fa-solid fa-circle-info mr-1"></i> Información</p>
+              <p className="text-sm font-bold text-gray-700">Para consultar el estado de su compra, diríjase a la opción "Mis Tickets" en el menú principal ingresando su DNI.</p>
+            </div>
+            <button
+              onClick={closeSuccessModal}
+              className="w-full bg-solid-black text-white font-heavy text-xl py-4 border-4 border-solid-black brutal-shadow uppercase hover:bg-gray-800 transition-all hover:translate-y-1 hover:shadow-none"
+            >
+              Entendido
+            </button>
           </div>
-        );
-      })()}
+        </div>
+      )}
 
       {/* MODAL ADMIN (Puerta Secreta Exportar) */}
       {isAdminModalOpen && (
@@ -191,9 +171,9 @@ export default function Modals({
       {/* MODAL BUSCAR TICKETS */}
       {isTicketsModalOpen && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-[100] flex items-center justify-center p-4 md:p-8 overflow-y-auto">
-          <div className={`w-full relative transition-all duration-300 ${searchStatus === "success" && searchResults.length > 0 ? "max-w-5xl" : "max-w-md bg-white border-4 border-solid-black p-6 sm:p-8 brutal-shadow"}`}>
+          <div className={`w-full relative transition-all duration-300 ${searchStatus === "success" && (searchResults.approved?.length > 0 || searchResults.rejected > 0 || searchResults.pending > 0) ? "max-w-5xl" : "max-w-md bg-white border-4 border-solid-black p-6 sm:p-8 brutal-shadow"}`}>
             
-            {searchStatus === "success" && searchResults.length > 0 ? (
+            {searchStatus === "success" && (searchResults.approved?.length > 0 || searchResults.rejected > 0 || searchResults.pending > 0) ? (
               <div className="w-full flex flex-col items-center">
                 <button
                   onClick={closeTicketsModal}
@@ -202,46 +182,67 @@ export default function Modals({
                   X
                 </button>
                 <h3 className="font-heavy text-2xl sm:text-4xl uppercase mb-4 text-white drop-shadow-[2px_2px_0_#000] text-center">
-                  ¡Tus Tickets Encontrados!
+                  Estado de tus Tickets
                 </h3>
+                
                 <div className="w-full flex flex-col items-center justify-center relative px-2 pb-4">
-                  <FestivalTicket 
-                    ticket={searchResults[currentTicketIndex]} 
-                    fireConfetti={currentTicketIndex === 0} 
-                  />
                   
-                  {searchResults.length > 1 && (
-                    <div className="flex items-center gap-6 mt-6">
-                      <button 
-                        onClick={() => setCurrentTicketIndex(prev => Math.max(0, prev - 1))}
-                        disabled={currentTicketIndex === 0}
-                        className={`w-12 h-12 flex items-center justify-center border-2 border-solid-black brutal-shadow rounded-full ${currentTicketIndex === 0 ? 'bg-gray-400 text-gray-600 cursor-not-allowed opacity-50' : 'bg-solid-yellow text-solid-black hover:scale-110 hover:bg-yellow-300 transition'}`}
-                      >
-                        <i className="fa-solid fa-arrow-left text-xl"></i>
-                      </button>
-                      
-                      <div className="flex flex-col items-center">
-                        <span className="font-heavy text-xl text-white drop-shadow-[2px_2px_0_#000]">
-                          {currentTicketIndex + 1} / {searchResults.length}
-                        </span>
-                        <span className="text-white text-xs font-bold mt-1 tracking-wider uppercase drop-shadow-[1px_1px_0_#000]">Tickets</span>
-                      </div>
-                      
-                      <button 
-                        onClick={() => setCurrentTicketIndex(prev => Math.min(searchResults.length - 1, prev + 1))}
-                        disabled={currentTicketIndex === searchResults.length - 1}
-                        className={`w-12 h-12 flex items-center justify-center border-2 border-solid-black brutal-shadow rounded-full ${currentTicketIndex === searchResults.length - 1 ? 'bg-gray-400 text-gray-600 cursor-not-allowed opacity-50' : 'bg-solid-yellow text-solid-black hover:scale-110 hover:bg-yellow-300 transition'}`}
-                      >
-                        <i className="fa-solid fa-arrow-right text-xl"></i>
-                      </button>
+                  {searchResults.rejected > 0 && (
+                    <div className="mb-4 bg-red-100 border-2 border-red-500 text-red-600 font-bold p-4 w-full max-w-2xl text-center brutal-shadow-sm uppercase text-sm flex items-center justify-center gap-2">
+                      <i className="fa-solid fa-triangle-exclamation text-xl"></i>
+                      Tienes {searchResults.rejected} ticket(s) rechazado(s) por problemas con el pago.
                     </div>
+                  )}
+
+                  {searchResults.pending > 0 && (
+                    <div className="mb-4 bg-yellow-100 border-2 border-yellow-500 text-yellow-700 font-bold p-4 w-full max-w-2xl text-center brutal-shadow-sm uppercase text-sm flex items-center justify-center gap-2">
+                      <i className="fa-solid fa-clock text-xl"></i>
+                      Tienes {searchResults.pending} ticket(s) en proceso de revisión.
+                    </div>
+                  )}
+
+                  {searchResults.approved?.length > 0 && (
+                    <>
+                      <h4 className="font-heavy text-xl uppercase mb-4 text-solid-green drop-shadow-[1px_1px_0_#000] text-center mt-4">Tickets Aprobados</h4>
+                      <FestivalTicket 
+                        ticket={searchResults.approved[currentTicketIndex]} 
+                        fireConfetti={currentTicketIndex === 0} 
+                      />
+                      
+                      {searchResults.approved.length > 1 && (
+                        <div className="flex items-center gap-6 mt-6">
+                          <button 
+                            onClick={() => setCurrentTicketIndex(prev => Math.max(0, prev - 1))}
+                            disabled={currentTicketIndex === 0}
+                            className={`w-12 h-12 flex items-center justify-center border-2 border-solid-black brutal-shadow rounded-full ${currentTicketIndex === 0 ? 'bg-gray-400 text-gray-600 cursor-not-allowed opacity-50' : 'bg-solid-yellow text-solid-black hover:scale-110 hover:bg-yellow-300 transition'}`}
+                          >
+                            <i className="fa-solid fa-arrow-left text-xl"></i>
+                          </button>
+                          
+                          <div className="flex flex-col items-center">
+                            <span className="font-heavy text-xl text-white drop-shadow-[2px_2px_0_#000]">
+                              {currentTicketIndex + 1} / {searchResults.approved.length}
+                            </span>
+                            <span className="text-white text-xs font-bold mt-1 tracking-wider uppercase drop-shadow-[1px_1px_0_#000]">Tickets Aprobados</span>
+                          </div>
+                          
+                          <button 
+                            onClick={() => setCurrentTicketIndex(prev => Math.min(searchResults.approved.length - 1, prev + 1))}
+                            disabled={currentTicketIndex === searchResults.approved.length - 1}
+                            className={`w-12 h-12 flex items-center justify-center border-2 border-solid-black brutal-shadow rounded-full ${currentTicketIndex === searchResults.approved.length - 1 ? 'bg-gray-400 text-gray-600 cursor-not-allowed opacity-50' : 'bg-solid-yellow text-solid-black hover:scale-110 hover:bg-yellow-300 transition'}`}
+                          >
+                            <i className="fa-solid fa-arrow-right text-xl"></i>
+                          </button>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
                 <button
                   onClick={() => setSearchStatus("idle")}
-                  className="mt-4 bg-white text-solid-black font-heavy text-lg py-2.5 px-6 border-[3px] border-solid-black brutal-shadow uppercase hover:bg-gray-200 transition"
+                  className="mt-6 bg-white text-solid-black font-heavy text-lg py-2.5 px-6 border-[3px] border-solid-black brutal-shadow uppercase hover:bg-gray-200 transition"
                 >
-                  Buscar Otro
+                  Buscar Otro DNI
                 </button>
               </div>
             ) : (
@@ -275,9 +276,9 @@ export default function Modals({
                   )}
                 </button>
                 
-                {searchStatus === "success" && searchResults.length === 0 && (
+                {searchStatus === "success" && searchResults.approved?.length === 0 && searchResults.rejected === 0 && searchResults.pending === 0 && (
                   <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-red-100 border-2 border-red-500 text-red-500 font-bold text-xs sm:text-sm">
-                    No se encontraron tickets para el DNI {searchDni}.
+                    No se encontraron tickets registrados para el DNI {searchDni} en este sorteo.
                   </div>
                 )}
                 {searchStatus === "error" && (

@@ -5,7 +5,7 @@ import { uploadImageToCloudinary } from "@/services/uploadService";
 import { saveTicketData } from "@/services/ticketService";
 import TermsModal from "./TermsModal";
 import { db } from "@/config/firebase";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { collection, query, where, getDocs, doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 
 // Helper to calculate file hash (SHA-256)
 const calculateImageHash = async (file) => {
@@ -84,29 +84,29 @@ export default function TicketForm({ isOpen, onClose, selectedDraw, onSuccess })
     setIsSearchingDni(true);
     setDniSearchMessage("");
     try {
-      const q = query(collection(db, "participantes"), where("dni", "==", completeDni));
-      const querySnapshot = await getDocs(q);
-      if (!querySnapshot.empty) {
-        let userData = null;
-        querySnapshot.forEach((doc) => {
-          userData = doc.data();
-        });
-        if (userData) {
-          setFormData((prev) => ({
-            ...prev,
-            dni: completeDni,
-            nombres: userData.nombres || "",
-            apellidos: userData.apellidos || "",
-          }));
-          setIsDniMatched(true);
-          setDniSearchMessage("✓ Usuario registrado anteriormente. Datos completados.");
-        }
+      const docRef = doc(db, "clientes", completeDni);
+      const docSnap = await getDoc(docRef);
+      
+      if (docSnap.exists()) {
+        const userData = docSnap.data();
+        setFormData((prev) => ({
+          ...prev,
+          dni: completeDni,
+          nombres: userData.nombres || "",
+          apellidos: userData.apellidos || "",
+          whatsapp: userData.whatsapp || "",
+          departamento: userData.departamento || "",
+        }));
+        setIsDniMatched(true);
+        setDniSearchMessage("✓ Usuario registrado anteriormente. Datos completados.");
       } else {
         setFormData((prev) => ({
           ...prev,
           dni: completeDni,
           nombres: "",
           apellidos: "",
+          whatsapp: "",
+          departamento: "",
         }));
         setIsDniMatched(false);
         setDniSearchMessage("No te has registrado anteriormente, por favor complete sus datos");
@@ -180,6 +180,17 @@ export default function TicketForm({ isOpen, onClose, selectedDraw, onSuccess })
 
         await saveTicketData(docData, comprobante_url, imageHash);
       }
+
+      // 4. Guardar info del usuario en "clientes" para el autocompletado futuro
+      const clienteRef = doc(db, "clientes", completeDni);
+      await setDoc(clienteRef, {
+        dni: completeDni,
+        nombres: formData.nombres,
+        apellidos: formData.apellidos || "",
+        whatsapp: formData.whatsapp,
+        departamento: formData.departamento,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
 
       // Success payload
       const successPayload = {
