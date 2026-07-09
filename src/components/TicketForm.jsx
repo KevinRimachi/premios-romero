@@ -8,8 +8,10 @@ import { db } from "@/config/firebase";
 import { collection, query, where, getDocs, doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 
 // Helper to calculate file hash (SHA-256)
-const calculateImageHash = async (file) => {
-  const arrayBuffer = await file.arrayBuffer();
+const calculateImageHash = async (fileOrBuffer) => {
+  const arrayBuffer = fileOrBuffer instanceof ArrayBuffer
+    ? fileOrBuffer
+    : await fileOrBuffer.arrayBuffer();
   const hashBuffer = await crypto.subtle.digest('SHA-256', arrayBuffer);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
@@ -21,6 +23,7 @@ const TICKET_PRICE = 10; // S/ 10.00 per ticket
 export default function TicketForm({ isOpen, onClose, selectedDraw, onSuccess }) {
 
   const [comprobanteFile, setComprobanteFile] = useState(null);
+  const [comprobanteHash, setComprobanteHash] = useState("");
   const [formData, setFormData] = useState({
     dni: "",
     nombres: "",
@@ -57,6 +60,7 @@ export default function TicketForm({ isOpen, onClose, selectedDraw, onSuccess })
       setDniSearchMessage("");
       setIsDniMatched(false);
       setComprobanteFile(null);
+      setComprobanteHash("");
       setErrorMessage("");
     }
   }, [isOpen]);
@@ -64,8 +68,29 @@ export default function TicketForm({ isOpen, onClose, selectedDraw, onSuccess })
   if (!isOpen) return null;
 
 
-  const handleFileChange = (e) => {
-    if (e.target.files && e.target.files[0]) setComprobanteFile(e.target.files[0]);
+  const handleFileChange = async (e) => {
+    const selectedFile = e.target.files && e.target.files[0];
+
+    setComprobanteFile(null);
+    setComprobanteHash("");
+    setErrorMessage("");
+
+    if (!selectedFile) return;
+
+    try {
+      const arrayBuffer = await selectedFile.arrayBuffer();
+      const copiedFile = new File([arrayBuffer], selectedFile.name, {
+        type: selectedFile.type,
+        lastModified: selectedFile.lastModified,
+      });
+
+      setComprobanteFile(copiedFile);
+      setComprobanteHash(await calculateImageHash(arrayBuffer));
+    } catch (error) {
+      console.error("Error leyendo el comprobante:", error);
+      e.target.value = "";
+      setErrorMessage("No se pudo leer el comprobante seleccionado. Por favor vuelve a elegir la imagen desde tu galería o archivos.");
+    }
   };
 
   const handleInputChange = (e) => {
@@ -113,7 +138,16 @@ export default function TicketForm({ isOpen, onClose, selectedDraw, onSuccess })
       }
     } catch (error) {
       console.error("Error buscando DNI:", error);
-      setDniSearchMessage("Error al conectar con la base de datos.");
+      setFormData((prev) => ({
+        ...prev,
+        dni: completeDni,
+        nombres: "",
+        apellidos: "",
+        whatsapp: "",
+        departamento: "",
+      }));
+      setIsDniMatched(false);
+      setDniSearchMessage("No se pudo autocompletar. Completa tus datos manualmente.");
     } finally {
       setIsSearchingDni(false);
     }
@@ -144,16 +178,22 @@ export default function TicketForm({ isOpen, onClose, selectedDraw, onSuccess })
 
     try {
       // 1. Calculate file hash
-      const imageHash = await calculateImageHash(comprobanteFile);
+      const imageHash = comprobanteHash || await calculateImageHash(comprobanteFile);
 
-      // 2. Check if hash exists in Firestore to prevent duplicates
-      const q = query(collection(db, "participantes"), where("comprobanteHash", "==", imageHash));
-      const querySnapshot = await getDocs(q);
+      // 2. Check if hash exists in Firestore to prevent duplicates.
+      // Some production rules allow public ticket creation but block public reads.
+      try {
+        const q = query(collection(db, "participantes"), where("comprobanteHash", "==", imageHash));
+        const querySnapshot = await getDocs(q);
 
-      if (!querySnapshot.empty) {
-        setErrorMessage("¡Voucher duplicado! El voucher ya ha sido utilizada anteriormente para registrar un ticket. Por favor, sube una captura válida y única.");
-        setIsSubmitting(false);
-        return;
+        if (!querySnapshot.empty) {
+          setErrorMessage("¡Voucher duplicado! El voucher ya ha sido utilizada anteriormente para registrar un ticket. Por favor, sube una captura válida y única.");
+          setIsSubmitting(false);
+          return;
+        }
+      } catch (error) {
+        if (error.code !== "permission-denied") throw error;
+        console.warn("No se pudo validar voucher duplicado por reglas de Firestore:", error);
       }
 
       const comprobante_url = await uploadImageToCloudinary(comprobanteFile);
@@ -181,16 +221,22 @@ export default function TicketForm({ isOpen, onClose, selectedDraw, onSuccess })
         await saveTicketData(docData, comprobante_url, imageHash);
       }
 
-      // 4. Guardar info del usuario en "clientes" para el autocompletado futuro
-      const clienteRef = doc(db, "clientes", completeDni);
-      await setDoc(clienteRef, {
-        dni: completeDni,
-        nombres: formData.nombres,
-        apellidos: formData.apellidos || "",
-        whatsapp: formData.whatsapp,
-        departamento: formData.departamento,
-        updatedAt: serverTimestamp()
-      }, { merge: true });
+      // 4. Guardar info del usuario en "clientes" para el autocompletado futuro.
+      // This is optional; blocked rules should not cancel already-created tickets.
+      try {
+        const clienteRef = doc(db, "clientes", completeDni);
+        await setDoc(clienteRef, {
+          dni: completeDni,
+          nombres: formData.nombres,
+          apellidos: formData.apellidos || "",
+          whatsapp: formData.whatsapp,
+          departamento: formData.departamento,
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+      } catch (error) {
+        if (error.code !== "permission-denied") throw error;
+        console.warn("No se pudo guardar cliente por reglas de Firestore:", error);
+      }
 
       // Success payload
       const successPayload = {
