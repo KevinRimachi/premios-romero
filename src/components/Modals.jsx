@@ -13,6 +13,8 @@ export default function Modals({
   closeAdminModal,
   isInactiveModalOpen,
   closeInactiveModal,
+  isMaintenanceModalOpen,
+  closeMaintenanceModal,
   isFormModalOpen,
   closeFormModal,
   selectedDraw,
@@ -311,6 +313,35 @@ export default function Modals({
             <button
               onClick={closeInactiveModal}
               className="w-full bg-solid-black text-white font-heavy text-xl py-3 border-2 border-solid-black brutal-shadow uppercase hover:bg-gray-800"
+            >
+              Entendido
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL MANTENIMIENTO */}
+      {isMaintenanceModalOpen && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+          <div className="max-w-md w-full bg-yellow-400 border-4 border-solid-black p-6 sm:p-8 relative brutal-shadow text-center">
+            <button
+              onClick={closeMaintenanceModal}
+              className="absolute -top-3 -right-3 sm:-top-4 sm:-right-4 w-8 h-8 sm:w-10 sm:h-10 bg-white border-2 border-solid-black text-solid-black font-black text-lg sm:text-xl brutal-shadow flex items-center justify-center hover:scale-110 transition"
+            >
+              X
+            </button>
+            <h2 className="font-heavy text-2xl sm:text-3xl text-solid-black uppercase tracking-wide mb-4">
+              <i className="fa-solid fa-clock mr-2"></i>Inscripciones en Revisión
+            </h2>
+            <p className="font-bold text-solid-black text-sm sm:text-base leading-relaxed mb-4">
+              Las inscripciones están temporalmente en revisión. Estamos implementando mejoras de seguridad para validar correctamente los pagos.
+            </p>
+            <div className="bg-white border-2 border-solid-black p-3 font-bold text-solid-black text-sm sm:text-base brutal-shadow-sm mb-6">
+              Por favor, vuelve a intentarlo más tarde. Mañana jueves 12:00 pm de la tarde aprox regresará a estar normal la página.
+            </div>
+            <button
+              onClick={closeMaintenanceModal}
+              className="w-full bg-solid-black text-white font-heavy text-xl py-3 border-2 border-solid-black brutal-shadow uppercase hover:bg-gray-800 transition"
             >
               Entendido
             </button>
