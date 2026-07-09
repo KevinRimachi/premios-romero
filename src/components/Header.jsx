@@ -1,5 +1,3 @@
-import { useState } from "react";
-
 export default function Header({ onOpenTickets }) {
   return (
     <header className="bg-solid-yellow border-b-[3px] border-solid-black sticky top-0 z-40">
@@ -38,9 +36,11 @@ export default function Header({ onOpenTickets }) {
 
           <button
             onClick={onOpenTickets}
-            className="bg-solid-black text-white border-2 border-solid-black px-3 md:px-5 py-1.5 text-xs md:text-sm font-bold flex items-center gap-2 brutal-shadow"
+            className="bg-solid-black text-white border-2 border-solid-black px-2.5 md:px-5 py-1.5 text-xs md:text-sm font-bold flex items-center gap-1.5 md:gap-2 brutal-shadow whitespace-nowrap"
+            aria-label="Ver mis tickets"
           >
-            <i className="fa-solid fa-ticket-simple"></i>{" "}
+            <i className="fa-solid fa-ticket-simple text-sm md:text-base"></i>
+            <span className="sm:hidden">Tickets</span>
             <span className="hidden sm:inline">Mis Tickets</span>
           </button>
         </div>
