@@ -6,6 +6,40 @@ import FestivalTicket from "./FestivalTicket";
 import { db } from "@/config/firebase";
 import { collection, query, where, getDocs } from "firebase/firestore";
 
+const TICKET_VISIBILITY_CUTOFF = new Date("2026-07-01T00:00:00");
+const DEFAULT_DRAW_NAMES = ["agosto", "30 de Agosto"];
+
+const getTicketDate = (ticket) => {
+  if (ticket.createdAt && typeof ticket.createdAt.toDate === "function") {
+    return ticket.createdAt.toDate();
+  }
+
+  if (ticket.createdAt instanceof Date) {
+    return ticket.createdAt;
+  }
+
+  return null;
+};
+
+const getTicketStatus = (ticket) => {
+  const status = ticket.status || ticket.estado;
+
+  if (status === "approved" || status === "aprobado") return "approved";
+  if (status === "rejected" || status === "rechazado") return "rejected";
+
+  return "pending";
+};
+
+const belongsToSelectedDraw = (ticket, selectedDraw) => {
+  const drawName = ticket.sorteo || "";
+
+  if (selectedDraw?.name) {
+    return drawName === selectedDraw.name;
+  }
+
+  return DEFAULT_DRAW_NAMES.includes(drawName);
+};
+
 export default function Modals({
   isTicketsModalOpen,
   closeTicketsModal,
@@ -83,8 +117,7 @@ export default function Modals({
     try {
       const q = query(
         collection(db, "participantes"), 
-        where("dni", "==", searchDni),
-        where("sorteo", "==", selectedDraw ? selectedDraw.name : "30 de Agosto")
+        where("dni", "==", searchDni)
       );
       const querySnapshot = await getDocs(q);
       const allResults = [];
@@ -92,9 +125,33 @@ export default function Modals({
         allResults.push(doc.data());
       });
       
-      const approvedTickets = allResults.filter(r => r.status === "approved");
-      const rejectedTickets = allResults.filter(r => r.status === "rejected");
-      const pendingTickets = allResults.filter(r => r.status === "pending" || !r.status);
+      const approvedTickets = [];
+      const rejectedTickets = [];
+      const pendingTickets = [];
+
+      allResults.forEach(r => {
+        if (!belongsToSelectedDraw(r, selectedDraw)) {
+          return;
+        }
+
+        const ticketDate = getTicketDate(r);
+        const isOldTicket = ticketDate && ticketDate < TICKET_VISIBILITY_CUTOFF;
+        const ticketStatus = getTicketStatus(r);
+
+        if (isOldTicket) {
+          // Tickets antiguos (antes del 1 de Julio) NO SE MUESTRAN EN ABSOLUTO
+          return;
+        }
+
+        if (ticketStatus === "approved") {
+          if (!ticketDate) return;
+          approvedTickets.push(r);
+        } else if (ticketStatus === "rejected") {
+          rejectedTickets.push(r);
+        } else {
+          pendingTickets.push(r);
+        }
+      });
       
       approvedTickets.sort((a, b) => {
         const numA = String(a.ticket_numero || "");
@@ -209,23 +266,23 @@ export default function Modals({
                 </h3>
                 
                 <div className="w-full flex flex-col items-center justify-center relative px-2 pb-4">
-                  {searchResults.rejected > 0 && (
+                  {Number(searchResults.rejected) > 0 && (
                     <div className="mb-4 bg-red-100 border-2 border-red-500 text-red-600 font-bold p-4 w-full max-w-2xl text-center brutal-shadow-sm uppercase text-sm flex items-center justify-center gap-2">
                       <i className="fa-solid fa-triangle-exclamation text-xl"></i>
                       Tienes {searchResults.rejected} ticket(s) rechazado(s) por problemas con el pago.
                     </div>
                   )}
 
-                  {searchResults.pending > 0 && (
+                  {Number(searchResults.pending) > 0 && (
                     <div className="mb-4 bg-yellow-100 border-2 border-yellow-500 text-yellow-700 font-bold p-4 w-full max-w-2xl text-center brutal-shadow-sm uppercase text-sm flex items-center justify-center gap-2">
                       <i className="fa-solid fa-clock text-xl"></i>
                       Tienes {searchResults.pending} ticket(s) en proceso de revisión.
                     </div>
                   )}
 
-                  {searchResults.approved?.length > 0 && (
-                    <>
-                      <h4 className="font-heavy text-xl uppercase mb-4 text-solid-green drop-shadow-[1px_1px_0_#000] text-center mt-4">Tickets Aprobados</h4>
+                  {Array.isArray(searchResults.approved) && searchResults.approved.length > 0 && (
+                    <div className="w-full flex flex-col items-center mt-4">
+                      <h4 className="font-heavy text-xl uppercase mb-4 text-solid-green drop-shadow-[1px_1px_0_#000] text-center">Tickets Aprobados</h4>
                       <FestivalTicket 
                         ticket={searchResults.approved[currentTicketIndex]} 
                         fireConfetti={currentTicketIndex === 0} 
@@ -257,11 +314,14 @@ export default function Modals({
                           </button>
                         </div>
                       )}
-                    </>
+                    </div>
                   )}
                 </div>
                 <button
-                  onClick={() => setSearchStatus("idle")}
+                  onClick={() => {
+                    setSearchStatus("idle");
+                    setSearchResults({ approved: [], rejected: 0, pending: 0 });
+                  }}
                   className="mt-6 bg-white text-solid-black font-heavy text-lg py-2.5 px-6 border-[3px] border-solid-black brutal-shadow uppercase hover:bg-gray-200 transition"
                 >
                   Buscar Otro DNI

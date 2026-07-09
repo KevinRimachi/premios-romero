@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { auth, db } from "@/config/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { collection, query, onSnapshot, doc, getDoc, updateDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
+import { collection, query, where, orderBy, onSnapshot, doc, getDoc, updateDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import * as XLSX from "xlsx";
 
@@ -48,7 +48,13 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (!isAdmin) return;
     
-    const q = query(collection(db, "participantes"));
+    const cutoffDate = new Date('2026-07-01T00:00:00');
+    const q = query(
+      collection(db, "participantes"), 
+      where("createdAt", ">=", cutoffDate),
+      orderBy("createdAt", "desc")
+    );
+    
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const grouped = {};
       snapshot.forEach((docSnap) => {

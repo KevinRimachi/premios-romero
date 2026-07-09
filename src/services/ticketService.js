@@ -12,6 +12,7 @@ export const saveTicketData = async (ticketData, imageUrl, imageHash) => {
       comprobanteUrl: imageUrl,
       comprobanteHash: imageHash, // Se guarda el hash para prevenir duplicados
       createdAt: serverTimestamp(),
+      status: "pending",
       estado: "pendiente", // Puedes usar esto para validar el pago más tarde
     });
 
