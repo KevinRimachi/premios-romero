@@ -134,9 +134,11 @@ export default function AdminDashboard() {
       } else if (type === "restore" && reg) {
         const promises = reg.docIds.map(docId => 
           updateDoc(doc(db, "participantes", docId), {
-            status: "pending",
+            status: "approved", // Se cambia de pending a approved para que queden aprobados al restaurar
             restoredAt: serverTimestamp(),
-            restoredBy: user.email
+            restoredBy: user.email,
+            approvedAt: serverTimestamp(),
+            approvedBy: user.email
           })
         );
         await Promise.all(promises);
